@@ -144,6 +144,7 @@ public class TonyApplicationMaster {
   private boolean singleNode;
   private boolean preprocessFinished = false;
   private int preprocessExitCode = 0;
+  private String proxyUrl;
 
   // Preprocessing job
   private boolean enablePreprocessing = false;
@@ -733,6 +734,12 @@ public class TonyApplicationMaster {
         return session.getTFTasks().values().stream()
             .flatMap(tasks -> Arrays.stream(tasks).map(TFTask::getTaskUrl))
             .collect(Collectors.toSet());
+      }
+
+      if (singleNode && proxyUrl != null) {
+        return new HashSet<TaskUrl>(){{
+          add(new TaskUrl("notebook", "0", proxyUrl));
+        }};
       }
 
       return Collections.emptySet();

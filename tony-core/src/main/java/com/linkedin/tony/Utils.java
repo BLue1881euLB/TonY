@@ -7,6 +7,7 @@ package com.linkedin.tony;
 import com.linkedin.tony.rpc.TaskUrl;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -14,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.core.ZipFile;
 import org.apache.commons.cli.Options;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -229,5 +231,26 @@ public class Utils {
     env.put(envPrefix + Constants.PATH_SUFFIX, resourcePath.toString());
     env.put(envPrefix + Constants.LENGTH_SUFFIX, Long.toString(resourceLength));
     env.put(envPrefix + Constants.TIMESTAMP_SUFFIX, Long.toString(resourceTimestamp));
+  }
+
+  public static boolean isArchive(String path) {
+    File f = new File(path);
+    int fileSignature = 0;
+    RandomAccessFile raf = null;
+    try {
+      raf = new RandomAccessFile(f, "r");
+      fileSignature = raf.readInt();
+    } catch (IOException e) {
+      // handle if you like
+    } finally {
+      IOUtils.closeQuietly(raf);
+    }
+    return fileSignature == 0x504B0304 || fileSignature == 0x504B0506 || fileSignature == 0x504B0708;
+  }
+
+  public static boolean renameFile(String oldName, String newName) {
+    File oldFile = new File(oldName);
+    File newFile = new File(newName);
+    return oldFile.renameTo(newFile);
   }
 }
